@@ -97,28 +97,12 @@ describe('Context', () => {
 
   describe('config', () => {
     let github: GitHubAPI
+    type GetContentsReturn = ReturnType<typeof github.repos.getContents>
 
     function responseFromString (content: string) {
-      const data = {
-        content: Buffer.from(content).toString('base64'),
-
-        // add dummy properties to make response compatible with Typecsript definitions
-        _links: {
-          git: '',
-          html: '',
-          self: ''
-        },
-        download_url: '',
-        git_url: '',
-        html_url: '',
-        name: '',
-        path: '',
-        sha: '',
-        size: 1,
-        type: '',
-        url: ''
-      }
-      return createMockResponse(data)
+      return createMockResponse({
+        content: Buffer.from(content).toString('base64')
+      })
     }
 
     function responseFromConfig (fileName: string) {
@@ -133,7 +117,7 @@ describe('Context', () => {
     })
 
     it('gets a valid configuration', async () => {
-      jest.spyOn(github.repos, 'getContents').mockReturnValue(responseFromConfig('basic.yml'))
+      jest.spyOn(github.repos, 'getContents').mockReturnValue(responseFromConfig('basic.yml') as GetContentsReturn)
       const config = await context.config('test-file.yml')
 
       expect(github.repos.getContents).toHaveBeenCalledTimes(1)
@@ -177,7 +161,7 @@ describe('Context', () => {
     })
 
     it('merges the default config', async () => {
-      jest.spyOn(github.repos, 'getContents').mockReturnValue(responseFromConfig('basic.yml'))
+      jest.spyOn(github.repos, 'getContents').mockReturnValue(responseFromConfig('basic.yml') as GetContentsReturn)
 
       const config = await context.config('test-file.yml', { bar: 1, boa: 6 })
 
@@ -197,8 +181,8 @@ describe('Context', () => {
 
     it('merges a base config', async () => {
       jest.spyOn(github.repos, 'getContents')
-        .mockReturnValueOnce(responseFromString('boa: 6\nfoo: 0\n_extends: base'))
-        .mockReturnValueOnce(responseFromConfig('basic.yml'))
+        .mockReturnValueOnce(responseFromString('boa: 6\nfoo: 0\n_extends: base') as GetContentsReturn)
+        .mockReturnValueOnce(responseFromConfig('basic.yml') as GetContentsReturn)
 
       const config = await context.config('test-file.yml', { bar: 1, boa: 6 })
 
@@ -222,8 +206,8 @@ describe('Context', () => {
 
     it('merges the base and default config', async () => {
       jest.spyOn(github.repos, 'getContents')
-        .mockReturnValueOnce(responseFromString('boa: 6\nfoo: 0\n_extends: base'))
-        .mockReturnValueOnce(responseFromConfig('basic.yml'))
+        .mockReturnValueOnce(responseFromString('boa: 6\nfoo: 0\n_extends: base') as GetContentsReturn)
+        .mockReturnValueOnce(responseFromConfig('basic.yml') as GetContentsReturn)
 
       const config = await context.config('test-file.yml', { bar: 1, new: true })
 
@@ -248,8 +232,8 @@ describe('Context', () => {
 
     it('merges a base config from another organization', async () => {
       jest.spyOn(github.repos, 'getContents')
-        .mockReturnValueOnce(responseFromString('boa: 6\nfoo: 0\n_extends: other/base'))
-        .mockReturnValueOnce(responseFromConfig('basic.yml'))
+        .mockReturnValueOnce(responseFromString('boa: 6\nfoo: 0\n_extends: other/base') as GetContentsReturn)
+        .mockReturnValueOnce(responseFromConfig('basic.yml') as GetContentsReturn)
 
       const config = await context.config('test-file.yml')
 
@@ -273,8 +257,8 @@ describe('Context', () => {
 
     it('merges a base config with a custom path', async () => {
       jest.spyOn(github.repos, 'getContents')
-        .mockReturnValueOnce(responseFromString('boa: 6\nfoo: 0\n_extends: base:test.yml'))
-        .mockReturnValueOnce(responseFromConfig('basic.yml'))
+        .mockReturnValueOnce(responseFromString('boa: 6\nfoo: 0\n_extends: base:test.yml') as GetContentsReturn)
+        .mockReturnValueOnce(responseFromConfig('basic.yml') as GetContentsReturn)
 
       const config = await context.config('test-file.yml')
 
@@ -298,7 +282,7 @@ describe('Context', () => {
 
     it('ignores a missing base config', async () => {
       jest.spyOn(github.repos, 'getContents')
-        .mockReturnValueOnce(responseFromString('boa: 6\nfoo: 0\n_extends: base'))
+        .mockReturnValueOnce(responseFromString('boa: 6\nfoo: 0\n_extends: base') as GetContentsReturn)
         .mockReturnValueOnce(Promise.reject(notFoundError))
 
       const config = await context.config('test-file.yml')
@@ -320,7 +304,7 @@ describe('Context', () => {
     })
 
     it('throws when the configuration file is malformed', async () => {
-      jest.spyOn(github.repos, 'getContents').mockReturnValue(responseFromConfig('malformed.yml'))
+      jest.spyOn(github.repos, 'getContents').mockReturnValue(responseFromConfig('malformed.yml') as GetContentsReturn)
 
       let e
       let contents
@@ -336,7 +320,7 @@ describe('Context', () => {
     })
 
     it('throws when loading unsafe yaml', async () => {
-      jest.spyOn(github.repos, 'getContents').mockReturnValue(responseFromConfig('evil.yml'))
+      jest.spyOn(github.repos, 'getContents').mockReturnValue(responseFromConfig('evil.yml') as GetContentsReturn)
 
       let e
       let config
@@ -353,7 +337,7 @@ describe('Context', () => {
 
     it('throws on a non-string base', async () => {
       jest.spyOn(github.repos, 'getContents')
-        .mockReturnValue(responseFromString('boa: 6\nfoo: 0\n_extends: { nope }'))
+        .mockReturnValue(responseFromString('boa: 6\nfoo: 0\n_extends: { nope }') as GetContentsReturn)
 
       let e
       let config
@@ -370,7 +354,7 @@ describe('Context', () => {
 
     it('throws on an invalid base', async () => {
       jest.spyOn(github.repos, 'getContents')
-        .mockReturnValue(responseFromString('boa: 6\nfoo: 0\n_extends: "nope:"'))
+        .mockReturnValue(responseFromString('boa: 6\nfoo: 0\n_extends: "nope:"') as GetContentsReturn)
 
       let e
       let config
@@ -386,7 +370,7 @@ describe('Context', () => {
     })
 
     it('returns an empty object when the file is empty', async () => {
-      jest.spyOn(github.repos, 'getContents').mockReturnValue(responseFromConfig('empty.yml'))
+      jest.spyOn(github.repos, 'getContents').mockReturnValue(responseFromConfig('empty.yml') as GetContentsReturn)
 
       const contents = await context.config('test-file.yml')
 
@@ -395,7 +379,7 @@ describe('Context', () => {
     })
 
     it('overwrites default config settings', async () => {
-      jest.spyOn(github.repos, 'getContents').mockReturnValue(responseFromConfig('basic.yml'))
+      jest.spyOn(github.repos, 'getContents').mockReturnValue(responseFromConfig('basic.yml') as GetContentsReturn)
       const config = await context.config('test-file.yml', { foo: 10 })
 
       expect(github.repos.getContents).toHaveBeenCalledTimes(1)
@@ -407,7 +391,7 @@ describe('Context', () => {
     })
 
     it('uses default settings to fill in missing options', async () => {
-      jest.spyOn(github.repos, 'getContents').mockReturnValue(responseFromConfig('missing.yml'))
+      jest.spyOn(github.repos, 'getContents').mockReturnValue(responseFromConfig('missing.yml') as GetContentsReturn)
       const config = await context.config('test-file.yml', { bar: 7 })
 
       expect(github.repos.getContents).toHaveBeenCalledTimes(1)
@@ -420,8 +404,8 @@ describe('Context', () => {
 
     it('uses the .github directory on a .github repo', async () => {
       jest.spyOn(github.repos, 'getContents')
-        .mockReturnValueOnce(responseFromString('foo: foo\n_extends: .github'))
-        .mockReturnValueOnce(responseFromConfig('basic.yml'))
+        .mockReturnValueOnce(responseFromString('foo: foo\n_extends: .github') as GetContentsReturn)
+        .mockReturnValueOnce(responseFromConfig('basic.yml') as GetContentsReturn)
       const config = await context.config('test-file.yml')
 
       expect(github.repos.getContents).toHaveBeenCalledWith({
@@ -444,7 +428,7 @@ describe('Context', () => {
     it('defaults to .github repo if no config found', async () => {
       jest.spyOn(github.repos, 'getContents')
         .mockReturnValueOnce(Promise.reject(notFoundError))
-        .mockReturnValueOnce(responseFromConfig('basic.yml'))
+        .mockReturnValueOnce(responseFromConfig('basic.yml') as GetContentsReturn)
       const config = await context.config('test-file.yml')
 
       expect(github.repos.getContents).toHaveBeenCalledWith({
@@ -466,8 +450,8 @@ describe('Context', () => {
 
     it('deep merges the base config', async () => {
       jest.spyOn(github.repos, 'getContents')
-        .mockReturnValueOnce(responseFromString('obj:\n  foo:\n  - name: master\n_extends: .github'))
-        .mockReturnValueOnce(responseFromString('obj:\n  foo:\n  - name: develop'))
+        .mockReturnValueOnce(responseFromString('obj:\n  foo:\n  - name: master\n_extends: .github') as GetContentsReturn)
+        .mockReturnValueOnce(responseFromString('obj:\n  foo:\n  - name: develop') as GetContentsReturn)
       const config = await context.config('test-file.yml')
 
       expect(config).toEqual({
@@ -482,8 +466,8 @@ describe('Context', () => {
 
     it('accepts deepmerge options', async () => {
       jest.spyOn(github.repos, 'getContents')
-        .mockReturnValueOnce(responseFromString('foo:\n  - name: master\n    shouldChange: changed\n_extends: .github'))
-        .mockReturnValueOnce(responseFromString('foo:\n  - name: develop\n  - name: master\n    shouldChange: should'))
+        .mockReturnValueOnce(responseFromString('foo:\n  - name: master\n    shouldChange: changed\n_extends: .github') as GetContentsReturn)
+        .mockReturnValueOnce(responseFromString('foo:\n  - name: develop\n  - name: master\n    shouldChange: should') as GetContentsReturn)
 
       const customMerge = jest.fn((_target: any[], _source: any[], _options: MergeOptions | undefined): any[] => [])
       await context.config('test-file.yml', {}, { arrayMerge: customMerge })
