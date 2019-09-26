@@ -55,7 +55,7 @@
     "@octokit/graphql": "^4.2.0",
     "@octokit/plugin-enterprise-compatibility": "^1.0.0",
     "@octokit/plugin-retry": "^2.1.1",
-    "@octokit/plugin-throttling": "^2.3.0",
+    "@octokit/plugin-throttling": "^2.6.0",
     "@octokit/request": "^5.1.0",
     "@octokit/rest": "^16.25.0",
     "@octokit/webhooks": "^6.0.0",
