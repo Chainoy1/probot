@@ -15,7 +15,8 @@
     "test": "tsc --noEmit -p test && jest --coverage && npm run lint && npm run doc-lint",
     "doc-lint": "standard-markdown docs/",
     "doc": "typedoc --options .typedoc.json",
-    "prepare": "npm run build"
+    "prepare": "npm run snyk-protect && npm run build",
+    "snyk-protect": "snyk protect"
   },
   "files": [
     "lib",
@@ -85,7 +86,8 @@
     "semver": "^6.0.0",
     "supports-color": "^7.0.0",
     "update-dotenv": "^1.1.0",
-    "uuid": "^3.2.1"
+    "uuid": "^3.2.1",
+    "snyk": "^1.316.1"
   },
   "devDependencies": {
     "@types/bunyan": "^1.8.4",
@@ -134,5 +136,6 @@
   },
   "engines": {
     "node": ">=7.7"
-  }
+  },
+  "snyk": true
 }
